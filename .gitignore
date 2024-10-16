@@ -1,0 +1,9 @@
+# Exclude folders
+/.venv/
+**/migrations
+
+# Databases
+*.sqlite3
+
+# .env file
+.env
