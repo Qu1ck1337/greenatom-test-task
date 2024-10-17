@@ -21,8 +21,8 @@ class UserSerializer(serializers.ModelSerializer):
 class ChannelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Channel
-        fields = ['id', 'name', 'members']
-        read_only_fields = ['members']
+        fields = ['id', 'name', 'owner', 'members', 'black_list']
+        read_only_fields = ['members', 'owner']
 
 
 class MessageSerializer(serializers.ModelSerializer):
