@@ -1,9 +1,7 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from chat.models import Channel, Message
+from chat.models import Channel, Message, User
 
-User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -24,6 +22,7 @@ class ChannelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Channel
         fields = ['id', 'name', 'members']
+        read_only_fields = ['members']
 
 
 class MessageSerializer(serializers.ModelSerializer):
