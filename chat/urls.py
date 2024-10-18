@@ -12,6 +12,6 @@ router.register(r'messages', MessageViewSet, basename='messages')
 urlpatterns = [
     path('', include(router.urls)),
     path('moderator/block-globally/<int:user_id>/', BlockUserGloballyView.as_view(), name='block-user'),
-    path('channels/join/<int:channel_id>/', ChannelJoinView.as_view(), name='channels'),
-    path('channels/leave/<int:channel_id>/', ChannelLeaveView.as_view(), name='channels'),
+    path('channels/join/<int:pk>/', ChannelJoinView.as_view(), name='channel-join'),
+    path('channels/leave/<int:pk>/', ChannelLeaveView.as_view(), name='channel-leave'),
 ]

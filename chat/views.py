@@ -1,3 +1,4 @@
+from autobahn.wamp.gen.wamp.proto.Serializer import Serializer
 from rest_framework import viewsets, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -29,10 +30,10 @@ class ChannelJoinView(GenericAPIView):
     serializer_class = None
     permission_classes = [IsAuthenticated, IsNotBlocked]
 
-    def post(self, request, channel_id):
+    def put(self, request, pk):
         try:
-            channel = Channel.objects.get(pk=channel_id)
-            if request.user in channel.black_list.all():
+            channel = Channel.objects.get(pk=pk)
+            if request.user in channel.black_list.all() or request.user.is_blocked:
                 return Response(status=status.HTTP_403_FORBIDDEN)
             if request.user in channel.members.all():
                 return Response({'status': 'already joined'})
@@ -47,9 +48,9 @@ class ChannelLeaveView(APIView):
     serializer_class = None
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request, channel_id):
+    def put(self, request, pk):
         try:
-            channel = Channel.objects.get(pk=channel_id)
+            channel = Channel.objects.get(pk=pk)
             if request.user not in channel.members.all():
                 return Response(status=status.HTTP_404_NOT_FOUND)
             channel.members.remove(request.user)
@@ -80,6 +81,9 @@ class BlockUserGloballyView(APIView):
             user = User.objects.get(pk=user_id)
             user.is_blocked = True
             user.save()
-            return Response({'status': 'User has been blocked'})
+            return Response(data=UserSerializer(user).data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+# todo register and login user

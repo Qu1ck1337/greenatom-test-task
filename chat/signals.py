@@ -7,7 +7,7 @@ from chat.models import Channel
 
 
 @receiver(m2m_changed, sender=Channel.members.through)
-def notify_user_removal(sender, instance, action, pk_set, **kwargs):
+def user_removal_from_members(sender, instance, action, pk_set, **kwargs):
     if action == "pre_remove":
         user_ids = pk_set
         channel_id = instance.id
@@ -23,6 +23,3 @@ def notify_user_removal(sender, instance, action, pk_set, **kwargs):
                     'user_id': user_id,
                 }
             )
-
-
-#todo make with "is_blocked" state
