@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    networks:
+      - backend
+    restart: always
+
+  backend-wsgi:
+    build: .
+    command: sh -c "python manage.py migrate && gunicorn chat_api.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - backend
+    restart: always
+
+  backend-asgi:
+    build: .
+    command: sh -c "python manage.py migrate && daphne chat_api.asgi:application --bind 0.0.0.0 --port 8001"
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - backend
+    restart: always
+
+  redis:
+    image: redis:6
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:

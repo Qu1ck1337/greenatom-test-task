@@ -1,19 +1,28 @@
-from autobahn.wamp.gen.wamp.proto.Serializer import Serializer
 from rest_framework import viewsets, status
-from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.generics import GenericAPIView, CreateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from chat.models import User, Channel, Message
 from chat.permissions import IsModerator, IsOwnerOrModerator, IsNotBlocked
-from chat.serializers import UserSerializer, ChannelSerializer, MessageSerializer
+from chat.serializers import UserSerializer, ChannelSerializer, MessageSerializer, RegisterSerializer
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class RegisterView(CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }, status=status.HTTP_201_CREATED)
 
 
 class ChannelViewSet(viewsets.ModelViewSet):
@@ -84,6 +93,3 @@ class BlockUserGloballyView(APIView):
             return Response(data=UserSerializer(user).data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-# todo register and login user
